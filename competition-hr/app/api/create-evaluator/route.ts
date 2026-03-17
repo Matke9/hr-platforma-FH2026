@@ -17,7 +17,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 2. Parse request body
+    // 2. Check caller is admin
+    const { data: callerProfile } = await serverSupabase
+      .from("profiles")
+      .select("role")
+      .eq("id", caller.id)
+      .single();
+
+    if (callerProfile?.role !== "admin") {
+      return NextResponse.json(
+        { error: "Samo administratori mogu kreirati evaluatore." },
+        { status: 403 }
+      );
+    }
+
+    // 3. Parse request body
     const body = await request.json();
     const { email, password, fullName } = body;
 
@@ -35,9 +49,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 3. Create admin supabase client with service role key
+    // 4. Create admin supabase client with service role key
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!serviceRoleKey) {
+      console.error("SUPABASE_SERVICE_ROLE_KEY is not set");
       return NextResponse.json(
         { error: "Server konfiguracija nedostaje (service role key)." },
         { status: 500 }
@@ -85,6 +100,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (err: any) {
+    console.error("Create evaluator error:", err);
     return NextResponse.json(
       { error: err.message || "Došlo je do greške." },
       { status: 500 }
