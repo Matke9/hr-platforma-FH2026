@@ -1,11 +1,12 @@
 ﻿"use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LogOut, LayoutDashboard, User } from "lucide-react";
+import { LogOut, LayoutDashboard, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { CreateEvaluatorDialog } from "@/components/create-evaluator-dialog";
 import { useAuth } from "@/hooks/use-auth";
 import { useProfile } from "@/hooks/use-profile";
 import { getInitials, getAvatarColor } from "@/lib/utils";
@@ -14,6 +15,7 @@ export function Navbar() {
   const { signOut } = useAuth();
   const { data: profile } = useProfile();
   const router = useRouter();
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   const handleSignOut = async () => {
     await signOut();
@@ -42,6 +44,13 @@ export function Navbar() {
             <LayoutDashboard className="h-4 w-4" />
             Dashboard
           </Link>
+          <button
+            onClick={() => setCreateDialogOpen(true)}
+            className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <UserPlus className="h-4 w-4" />
+            Dodaj evaluatora
+          </button>
         </nav>
 
         {/* User menu */}
@@ -69,6 +78,11 @@ export function Navbar() {
           </Button>
         </div>
       </div>
+
+      <CreateEvaluatorDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+      />
     </header>
   );
 }
